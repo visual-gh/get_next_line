@@ -6,7 +6,7 @@
 /*   By: Visual <github.com/visual-gh>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 18:17:21 by Visual            #+#    #+#             */
-/*   Updated: 2025/11/27 20:05:42 by Visual           ###   ########.fr       */
+/*   Updated: 2025/11/29 15:56:58 by Visual           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,37 +14,77 @@
 
 static char	*read_to_stash(int fd, char *stash)
 {
-	char	*buf;
-	size_t	bytes;
+	char	*buffer;
+	ssize_t	n;
 
-	buf = malloc(BUFFER_SIZE + 1);
-	if (!buf)
+	buffer = malloc(BUFFER_SIZE + 1);
+	if (!buffer)
 		return (NULL);
-	bytes = 1;
-	while (!ft_strchr(stash, '\n') && bytes > 0)
+	n = 1;
+	while (!ft_strchr(stash, '\n') && n > 0)
 	{
-		bytes = read(fd, buf, BUFFER_SIZE);
-		if (bytes < 0)
-		{
-			free(buf);
-			return (NULL);
-		}
-		buf[bytes] = '\0';
+		n = read(fd, buffer, BUFFER_SIZE);
+		if (n < 0)
+			return (free(buffer), NULL);
+		buffer[n] = '\0';
 		if (!stash)
-			stash = ft_strdup(buf);
+			stash = ft_strdup(buffer);
 		else
-			stash = ft_strjoin(stash, buf);
+			stash = ft_strjoin(stash, buffer);
 		if (!stash)
 			break ;
 	}
-	free(buf);
+	free(buffer);
 	return (stash);
 }
 
-
 static char	*extract_line(char *stash)
+{
+	char	*line;
+	size_t	i;
+
+	if (!stash || !stash[0])
+		return (NULL);
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+		i++;
+	line = malloc(i + 2);
+	if (!line)
+		return (NULL);
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+	{
+		line[i] = stash[i];
+		i++;
+	}
+	if (stash[i] == '\n')
+		line[i++] = '\n';
+	line[i] = '\0';
+	return (line);
+}
 
 static char	*clean_stash(char *stash)
+{
+	char	*new;
+	size_t	i;
+	size_t	j;
+
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+		i++;
+	if (!stash[i])
+		return (free(stash), NULL);
+	new = malloc(ft_strlen(stash) - i);
+	if (!new)
+		return (NULL);
+	i++;
+	j = 0;
+	while (stash[i])
+		new[j++] = stash[i++];
+	new[j] = '\0';
+	free(stash);
+	return (new);
+}
 
 char	*get_next_line(int fd)
 {
