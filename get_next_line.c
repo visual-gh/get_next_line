@@ -6,15 +6,20 @@
 /*   By: Visual <github.com/visual-gh>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 18:17:21 by Visual            #+#    #+#             */
-/*   Updated: 2025/11/29 15:56:58 by Visual           ###   ########.fr       */
+/*   Updated: 2025/11/29 17:05:04 by Visual           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
+// STEP 1: Read from file descriptor until we find '\n' or reach EOF
+// Builds up the 'stash' by reading BUFFER_SIZE chunks at a time
+// The stash accumulates all data read so far (including leftovers from previous calls)
+
 static char	*read_to_stash(int fd, char *stash)
 {
 	char	*buffer;
+	char	*temp;
 	ssize_t	n;
 
 	buffer = malloc(BUFFER_SIZE + 1);
@@ -25,18 +30,23 @@ static char	*read_to_stash(int fd, char *stash)
 	{
 		n = read(fd, buffer, BUFFER_SIZE);
 		if (n < 0)
-			return (free(buffer), NULL);
+			return (free(buffer), free(stash), NULL);
 		buffer[n] = '\0';
 		if (!stash)
-			stash = ft_strdup(buffer);
-		else
-			stash = ft_strjoin(stash, buffer);
+			stash = ft_strdup("");
+		temp = ft_strjoin(stash, buffer);
+		free(stash);
+		stash = temp;
 		if (!stash)
-			break ;
+			return (free(buffer), NULL);
 	}
 	free(buffer);
 	return (stash);
 }
+
+// STEP 2: Extract one complete line from the stash
+// A line ends with '\n' OR at the end of the stash (last line without \n)
+// Returns a newly allocated string containing the line (including \n if present)
 
 static char	*extract_line(char *stash)
 {
@@ -63,6 +73,10 @@ static char	*extract_line(char *stash)
 	return (line);
 }
 
+// STEP 3: Clean the stash by removing the line we just extracted
+// Keeps everything AFTER the '\n' for the next call to get_next_line
+// If there's nothing left after '\n', free the stash and return NULL
+
 static char	*clean_stash(char *stash)
 {
 	char	*new;
@@ -74,9 +88,9 @@ static char	*clean_stash(char *stash)
 		i++;
 	if (!stash[i])
 		return (free(stash), NULL);
-	new = malloc(ft_strlen(stash) - i);
+	new = malloc(ft_strlen(stash) - i + 1);
 	if (!new)
-		return (NULL);
+		return (free(stash), NULL);
 	i++;
 	j = 0;
 	while (stash[i])
@@ -85,6 +99,10 @@ static char	*clean_stash(char *stash)
 	free(stash);
 	return (new);
 }
+
+// MAIN FUNCTION: Called repeatedly to read file line by line
+// Uses a static variable 'stash' to remember leftover data between calls
+// Returns one line per call, NULL when file ends or on error
 
 char	*get_next_line(int fd)
 {
