@@ -6,7 +6,7 @@
 /*   By: Visual <github.com/visual-gh>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 12:15:35 by Visual            #+#    #+#             */
-/*   Updated: 2025/11/29 17:12:17 by Visual           ###   ########.fr       */
+/*   Updated: 2025/12/12 23:49:11 by Visual           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,14 @@ size_t	ft_strlen(const char *s)
 
 char	*ft_strchr(const char *s, int c)
 {
+	if (!s)
+		return (NULL);
 	while (1)
 	{
 		if (*s == (unsigned char)c)
 			return ((char *)s);
 		if (!*s)
-			return (0);
+			return (NULL);
 		s++;
 	}
 }
