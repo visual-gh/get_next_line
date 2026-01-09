@@ -6,7 +6,7 @@
 /*   By: Visual <github.com/visual-gh>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 18:17:21 by Visual            #+#    #+#             */
-/*   Updated: 2026/01/09 03:10:03 by Visual           ###   ########.fr       */
+/*   Updated: 2026/01/09 22:49:07 by Visual           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,22 +66,15 @@ static char	*clean_stash(char *stash)
 {
 	char	*new;
 	size_t	i;
-	size_t	j;
 
 	i = 0;
 	while (stash[i] && stash[i] != '\n')
 		i++;
 	if (!stash[i])
 		return (free(stash), NULL);
-	new = malloc(ft_strlen(stash) - i + 1);
-	if (!new)
-		return (free(stash), NULL);
-	i++;
-	j = 0;
-	while (stash[i])
-		new[j++] = stash[i++];
-	new[j] = '\0';
-	return (free(stash), new);
+	new = ft_strdup(stash + i + 1);
+	free(stash);
+	return (new);
 }
 
 char	*get_next_line(int fd)
@@ -93,8 +86,6 @@ char	*get_next_line(int fd)
 		return (NULL);
 	if (!stash)
 		stash = ft_strdup("");
-	if (!stash)
-		return (NULL);
 	stash = read_to_stash(fd, stash);
 	if (!stash)
 		return (NULL);
