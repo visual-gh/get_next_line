@@ -6,7 +6,7 @@
 /*   By: Visual <github.com/visual-gh>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 18:17:21 by Visual            #+#    #+#             */
-/*   Updated: 2026/01/09 22:49:07 by Visual           ###   ########.fr       */
+/*   Updated: 2026/01/09 23:07:25 by Visual           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,27 +14,27 @@
 
 static char	*read_to_stash(int fd, char *stash)
 {
-	char	*buffer;
-	char	*temp;
+	char	*buf;
+	char	*tmp;
 	ssize_t	n;
 
-	buffer = malloc(BUFFER_SIZE + 1);
-	if (!buffer)
+	buf = malloc(BUFFER_SIZE + 1);
+	if (!buf)
 		return (free(stash), NULL);
 	n = 1;
 	while (!ft_strchr(stash, '\n') && n > 0)
 	{
-		n = read(fd, buffer, BUFFER_SIZE);
+		n = read(fd, buf, BUFFER_SIZE);
 		if (n < 0)
-			return (free(stash), free(buffer), NULL);
-		buffer[n] = '\0';
-		temp = ft_strjoin(stash, buffer);
+			return (free(stash), free(buf), NULL);
+		buf[n] = '\0';
+		tmp = ft_strjoin(stash, buf);
 		free(stash);
-		stash = temp;
+		stash = tmp;
 		if (!stash)
-			return (free(buffer), NULL);
+			return (free(buf), NULL);
 	}
-	return (free(buffer), stash);
+	return (free(buf), stash);
 }
 
 static char	*extract_line(char *stash)
