@@ -6,18 +6,11 @@
 /*   By: Visual <github.com/visual-gh>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 18:17:21 by Visual            #+#    #+#             */
-/*   Updated: 2026/01/03 00:44:39 by Visual           ###   ########.fr       */
+/*   Updated: 2026/01/09 03:10:03 by Visual           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-static char	*free_and_null(char *stash, char *buffer)
-{
-	free(stash);
-	free(buffer);
-	return (NULL);
-}
 
 static char	*read_to_stash(int fd, char *stash)
 {
@@ -25,10 +18,6 @@ static char	*read_to_stash(int fd, char *stash)
 	char	*temp;
 	ssize_t	n;
 
-	if (!stash)
-		stash = ft_strdup("");
-	if (!stash)
-		return (NULL);
 	buffer = malloc(BUFFER_SIZE + 1);
 	if (!buffer)
 		return (free(stash), NULL);
@@ -37,7 +26,7 @@ static char	*read_to_stash(int fd, char *stash)
 	{
 		n = read(fd, buffer, BUFFER_SIZE);
 		if (n < 0)
-			return (free_and_null(stash, buffer));
+			return (free(stash), free(buffer), NULL);
 		buffer[n] = '\0';
 		temp = ft_strjoin(stash, buffer);
 		free(stash);
@@ -79,8 +68,6 @@ static char	*clean_stash(char *stash)
 	size_t	i;
 	size_t	j;
 
-	if (!stash)
-		return (NULL);
 	i = 0;
 	while (stash[i] && stash[i] != '\n')
 		i++;
@@ -103,6 +90,10 @@ char	*get_next_line(int fd)
 	char		*line;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
+	if (!stash)
+		stash = ft_strdup("");
+	if (!stash)
 		return (NULL);
 	stash = read_to_stash(fd, stash);
 	if (!stash)
