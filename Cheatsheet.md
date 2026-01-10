@@ -154,21 +154,21 @@ return (NULL);
 ### The Main Controller
 
 ```c
-char *get_next_line(int fd)
+char	*get_next_line(int fd)
 {
-    static char *stash;
-    char        *line;
+	static char	*stash;
+	char		*line;
 
-    if (fd < 0 || BUFFER_SIZE <= 0)
-        return (NULL);
-    if (!stash)
-        stash = ft_strdup("");
-    stash = read_to_stash(fd, stash);
-    if (!stash)
-        return (NULL);
-    line = extract_line(stash);
-    stash = clean_stash(stash);
-    return (line);
+	if (fd < 0 || BUFFER_SIZE <= 0)
+		return (NULL);
+	if (!stash)
+		stash = ft_strdup("");
+	stash = read_to_stash(fd, stash);
+	if (!stash)
+		return (NULL);
+	line = extract_line(stash);
+	stash = clean_stash(stash);
+	return (line);
 }
 ```
 
@@ -238,29 +238,29 @@ return (line);
 ### The Data Accumulator
 
 ```c
-static char *read_to_stash(int fd, char *stash)
+static char	*read_to_stash(int fd, char *stash)
 {
-    char    *buffer;
-    char    *temp;
-    ssize_t n;
+	char	*buf;
+	char	*tmp;
+	ssize_t	n;
 
-    buffer = malloc(BUFFER_SIZE + 1);
-    if (!buffer)
-        return (free(stash), NULL);
-    n = 1;
-    while (!ft_strchr(stash, '\n') && n > 0)
-    {
-        n = read(fd, buffer, BUFFER_SIZE);
-        if (n < 0)
-            return (free(stash), free(buffer), NULL);
-        buffer[n] = '\0';
-        temp = ft_strjoin(stash, buffer);
-        free(stash);
-        stash = temp;
-        if (!stash)
-            return (free(buffer), NULL);
-    }
-    return (free(buffer), stash);
+	buf = malloc(BUFFER_SIZE + 1);
+	if (!buf)
+		return (free(stash), NULL);
+	n = 1;
+	while (!ft_strchr(stash, '\n') && n > 0)
+	{
+		n = read(fd, buf, BUFFER_SIZE);
+		if (n < 0)
+			return (free(stash), free(buf), NULL);
+		buf[n] = '\0';
+		tmp = ft_strjoin(stash, buf);
+		free(stash);
+		stash = tmp;
+		if (!stash)
+			return (free(buf), NULL);
+	}
+	return (free(buf), stash);
 }
 ```
 
@@ -268,9 +268,9 @@ static char *read_to_stash(int fd, char *stash)
 
 **Step 1: Allocate temporary buffer**
 ```c
-buffer = malloc(BUFFER_SIZE + 1);
-if (!buffer)
-    return (free(stash), NULL);
+buf = malloc(BUFFER_SIZE + 1);
+if (!buf)
+	return (free(stash), NULL);
 ```
 - Create space for reading chunks
 - `+1` for null terminator
@@ -299,9 +299,9 @@ while (!ft_strchr(stash, '\n') && n > 0)
 
 **Step 4: Read chunk from file**
 ```c
-n = read(fd, buffer, BUFFER_SIZE);
+n = read(fd, buf, BUFFER_SIZE);
 if (n < 0)
-    return (free(stash), free(buffer), NULL);
+	return (free(stash), free(buf), NULL);
 ```
 - Read up to BUFFER_SIZE bytes
 - Store in buffer
@@ -311,7 +311,7 @@ if (n < 0)
 
 **Step 5: Null-terminate buffer**
 ```c
-buffer[n] = '\0';
+buf[n] = '\0';
 ```
 - **CRITICAL:** `read()` doesn't add `\0`
 - We need it for string functions
@@ -321,11 +321,11 @@ buffer[n] = '\0';
 
 **Step 6: Append to stash (Memory Dance)**
 ```c
-temp = ft_strjoin(stash, buffer);  // Create: old + new
-free(stash);                        // Free: old
-stash = temp;                       // Keep: new combined
+tmp = ft_strjoin(stash, buf);     // Create: old + new
+free(stash);                      // Free: old
+stash = tmp;                      // Keep: new combined
 if (!stash)
-    return (free(buffer), NULL);
+	return (free(buf), NULL);
 ```
 
 **Visual:**
@@ -348,7 +348,7 @@ stash  → "HelloWor"
 
 **Step 7: Clean up and return**
 ```c
-return (free(buffer), stash);
+return (free(buf), stash);
 ```
 - Free temporary buffer (no longer needed)
 - Return accumulated stash
@@ -364,16 +364,16 @@ return (free(buffer), stash);
 Initial: stash = ""
 
 Loop 1:
-  read(fd, buffer, 2) → buffer = "Hi", n = 2
-  buffer[2] = '\0'
-  temp = "" + "Hi" = "Hi"
+  read(fd, buf, 2) → buffer = "Hi", n = 2
+  buf[2] = '\0'
+  tmp = "" + "Hi" = "Hi"
   stash = "Hi"
   No \n found, continue
 
 Loop 2:
-  read(fd, buffer, 2) → buffer = "\nB", n = 2
-  buffer[2] = '\0'
-  temp = "Hi" + "\nB" = "Hi\nB"
+  read(fd, buf, 2) → buffer = "\nB", n = 2
+  buf[2] = '\0'
+  tmp = "Hi" + "\nB" = "Hi\nB"
   stash = "Hi\nB"
   \n found! Exit loop
 
@@ -386,29 +386,29 @@ Return: "Hi\nB"
 ### The Line Extractor
 
 ```c
-static char *extract_line(char *stash)
+static char	*extract_line(char *stash)
 {
-    char    *line;
-    size_t  i;
+	char	*line;
+	size_t	i;
 
-    if (!stash || !stash[0])
-        return (NULL);
-    i = 0;
-    while (stash[i] && stash[i] != '\n')
-        i++;
-    line = malloc(i + 2);
-    if (!line)
-        return (NULL);
-    i = 0;
-    while (stash[i] && stash[i] != '\n')
-    {
-        line[i] = stash[i];
-        i++;
-    }
-    if (stash[i] == '\n')
-        line[i++] = '\n';
-    line[i] = '\0';
-    return (line);
+	if (!stash || !stash[0])
+		return (NULL);
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+		i++;
+	line = malloc(i + 2);
+	if (!line)
+		return (NULL);
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+	{
+		line[i] = stash[i];
+		i++;
+	}
+	if (stash[i] == '\n')
+		line[i++] = '\n';
+	line[i] = '\0';
+	return (line);
 }
 ```
 
@@ -417,7 +417,7 @@ static char *extract_line(char *stash)
 **Step 1: Safety checks**
 ```c
 if (!stash || !stash[0])
-    return (NULL);
+	return (NULL);
 ```
 - `!stash` - Stash is NULL (shouldn't happen, defensive)
 - `!stash[0]` - Stash is empty string (EOF reached)
@@ -428,7 +428,7 @@ if (!stash || !stash[0])
 ```c
 i = 0;
 while (stash[i] && stash[i] != '\n')
-    i++;
+	i++;
 ```
 **Example:**
 ```
@@ -459,8 +459,8 @@ line = malloc(i + 2);
 i = 0;
 while (stash[i] && stash[i] != '\n')
 {
-    line[i] = stash[i];
-    i++;
+	line[i] = stash[i];
+	i++;
 }
 ```
 **Why reset i?** We already used it for counting, now use it for indexing.
@@ -477,7 +477,7 @@ line:  "Hello"
 **Step 5: Include newline if present**
 ```c
 if (stash[i] == '\n')
-    line[i++] = '\n';
+	line[i++] = '\n';
 ```
 **Post-increment magic:**
 - Copy `\n` to `line[i]`
@@ -498,19 +498,19 @@ Final result: `"Hello\n\0"` or `"Hello\0"` (if no newline)
 ### The Leftover Keeper
 
 ```c
-static char *clean_stash(char *stash)
+static char	*clean_stash(char *stash)
 {
-    char    *new;
-    size_t  i;
+	char	*new;
+	size_t	i;
 
-    i = 0;
-    while (stash[i] && stash[i] != '\n')
-        i++;
-    if (!stash[i])
-        return (free(stash), NULL);
-    new = ft_strdup(stash + i + 1);
-    free(stash);
-    return (new);
+	i = 0;
+	while (stash[i] && stash[i] != '\n')
+		i++;
+	if (!stash[i])
+		return (free(stash), NULL);
+	new = ft_strdup(stash + i + 1);
+	free(stash);
+	return (new);
 }
 ```
 
@@ -520,7 +520,7 @@ static char *clean_stash(char *stash)
 ```c
 i = 0;
 while (stash[i] && stash[i] != '\n')
-    i++;
+	i++;
 ```
 **Example:**
 ```
@@ -535,7 +535,7 @@ After loop: i = 5 (at '\n')
 **Step 2: Check if newline exists**
 ```c
 if (!stash[i])
-    return (free(stash), NULL);
+	return (free(stash), NULL);
 ```
 - If `stash[i]` is `\0`, we didn't find `\n`
 - This means we returned the last line
