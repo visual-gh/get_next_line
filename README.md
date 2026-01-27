@@ -28,7 +28,7 @@ while ((line = get_next_line(fd)))
 close(fd);
 ```
 
-The `BUFFER_SIZE` can be set at compilation to any value (tested with 1, 42, 9999, 10000000).
+The `BUFFER_SIZE` can be set at compilation to any value (1, 42, 9999, 10000000, etc...).
 
 ## Function Behavior
 
@@ -88,7 +88,7 @@ Uses a static `stash` to persist data between function calls. Continues reading 
 
 ## Resources
 
-- [42-Cursus Gitbook - get_next_line](https://42-cursus.gitbook.io/guide/rank-01/get_next_line)
+- [42 Cursus Gitbook](https://42-cursus.gitbook.io/guide/rank-01/get_next_line)
 - ["understanding get_next_line" (nikito)](https://www.youtube.com/watch?v=8E9siq7apUU)
 - Man pages: `read`, `malloc`, `free`
 
