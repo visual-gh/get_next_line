@@ -15,17 +15,22 @@ cc -Wall -Wextra -Werror -D BUFFER_SIZE=42 get_next_line.c get_next_line_utils.c
 
 Usage:
 ```c
+#include <stdio.h>
 #include "get_next_line.h"
 
-int fd = open("file.txt", O_RDONLY);
-char *line;
-
-while ((line = get_next_line(fd)))
+int main(void)
 {
-    printf("%s", line);
-    free(line);
+    int fd = open("file.txt", O_RDONLY);
+    char *line;
+    int i = 0;
+
+    while ((line = get_next_line(fd)))
+    {
+        printf("Read %d : %s", i++, line);
+        free(line);
+    }
+    close(fd);
 }
-close(fd);
 ```
 
 The `BUFFER_SIZE` can be set at compilation to any value (1, 42, 9999, 10000000, etc...).
